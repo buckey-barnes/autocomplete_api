@@ -1,0 +1,41 @@
+ import requests
+
+def fetch_all_names(base_url):
+    """
+    Fetches all possible names from the autocomplete API using BFS.
+    
+    Parameters:
+    - base_url: The base URL of the API.
+    
+    Returns:
+    - A set of all unique names found.
+    """
+    all_names = set()
+    queue = [""]
+    total_requests = 0
+
+    while queue:
+        current_query = queue.pop(0)
+        response = requests.get(f"{base_url}?query={current_query}")
+        total_requests += 1
+        
+        if response.status_code == 200:
+            data = response.json()
+            for name in data.get("results", []):
+                if name not in all_names:
+                    all_names.add(name)
+                    queue.append(name)  # Explore further with each new name
+
+    return total_requests, all_names
+
+# Base URL of the API
+base_url = "http://35.200.185.69:8000/v1/autocomplete"
+
+# Fetch all names and calculate stats
+total_requests, all_names = fetch_all_names(base_url)
+
+# Print the stats
+print(f"Total Requests: {total_requests}")
+print(f"Total Records: {len(all_names)}")
+print(f"Sample Records: {list(all_names)[:10]}")
+
